@@ -7,7 +7,8 @@
         :class="['tab-header', { active: activeTab === index }]"
         @click="switchTab(index)"
       >
-        📝 {{ tab.name }}
+        <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24"/>
+        <span>{{ tab.name }}</span>
         <span class="close-tab" @click.stop="closeTab(index)">×</span>
       </div>
       <button class="add-tab" @click="addTab">+ New Tab</button>
@@ -19,6 +20,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import * as monaco from 'monaco-editor'
+import SvgIcon from '@/components/SvgIcon.vue'
 
 // Types
 interface Tab {
@@ -26,6 +28,7 @@ interface Tab {
   name: string
   content: string
   language: string
+  iconName?: string
 }
 
 // Refs
@@ -34,7 +37,22 @@ let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null
 
 // Tab management
 const tabs = ref<Tab[]>([
-  { id: 1, name: 'Tab 1', content: '// Start coding here', language: 'javascript' }
+  { id: 1, name: 'HelloWorld.js', content: 'console.log(123)', language: 'javascript', iconName: 'javascript' },
+  { id: 2, name: 'HelloWorld.ts', content: 'const a: number = 123', language: 'typescript', iconName: 'typescript' },
+  {
+    id: 3,
+    name: 'HelloWorld.java',
+    content: 'public class HelloWorld {\n\tpublic static void main(String[] args) {}\n}',
+    language: 'java',
+    iconName: 'java'
+  },
+  {
+    id: 4,
+    name: 'HelloWorld.cs',
+    content: 'namespace HelloWorld;\n\npublic class HelloWorld {}',
+    language: 'csharp',
+    iconName: 'csharp'
+  }
 ])
 const activeTab = ref<number>(0)
 
@@ -116,6 +134,10 @@ const closeTab = (index: number) => {
   color: #fff;
   position: relative;
   user-select: none;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  gap: 10px;
 }
 
 .tab-header.active {
