@@ -1,19 +1,23 @@
 <template>
-  <div class="editor-container">
-    <div class="tab-headers">
+  <div class="h-screen flex flex-col">
+    <div class="flex bg-[#2d2d2d]">
       <div
         v-for="(tab, index) in tabs"
         :key="tab.id"
-        :class="['tab-header', { active: activeTab === index }]"
+        class="flex justify-center items-center gap-2 text-white cursor-pointer px-4 py-2"
+        :class="{ 'bg-[#1e1e1e]': activeTab === index,'border-b-1': activeTab === index }"
         @click="switchTab(index)"
       >
         <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24"/>
-        <span>{{ tab.name }}</span>
-        <span class="close-tab" @click.stop="closeTab(index)">×</span>
+        <span :class="{ 'text-gray-500': activeTab !== index }">{{ tab.name }}</span>
+        <div class="ml-2 text-sm cursor-pointer hover:text-red-400" @click.stop="closeTab(index)">×</div>
       </div>
-      <button class="add-tab" @click="addTab">+ New Tab</button>
+      <button class="m-1 px-2 text-white cursor-pointer border-none hover:text-green-300 text-2xl"
+              @click="addTab">
+        +
+      </button>
     </div>
-    <div ref="editor" class="editor"></div>
+    <div ref="editor" class="flex-1/2 min-h-0"></div>
   </div>
 </template>
 
@@ -63,7 +67,8 @@ onMounted(() => {
       value: tabs.value[0].content,
       language: tabs.value[0].language,
       theme: 'vs-dark',
-      automaticLayout: true
+      automaticLayout: true,
+      fontSize: 16
     })
 
     editorInstance.onDidChangeModelContent(() => {
@@ -115,66 +120,4 @@ const closeTab = (index: number) => {
 }
 </script>
 
-<style scoped>
-.editor-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.tab-headers {
-  display: flex;
-  background: #1e1e1e;
-  border-bottom: 1px solid #444;
-}
-
-.tab-header {
-  padding: 8px 15px;
-  cursor: pointer;
-  color: #fff;
-  position: relative;
-  user-select: none;
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  gap: 10px;
-}
-
-.tab-header.active {
-  background: #2d2d2d;
-  /*border-bottom: 2px solid #3b82f6;*/
-  /*border-bottom: 2px solid #6b7280;*/
-  /*border-bottom: 2px solid #10b981;*/
-  /*border-bottom: 2px solid #ef4444;*/
-  /*border-bottom: 2px solid #f59e0b;*/
-  border-bottom: 2px solid #60a5fa;
-}
-
-.close-tab {
-  margin-left: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.close-tab:hover {
-  color: #ff4444;
-}
-
-.add-tab {
-  margin: 4px;
-  padding: 4px 10px;
-  background: #444;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.add-tab:hover {
-  background: #555;
-}
-
-.editor {
-  flex: 1;
-  min-height: 0;
-}
-</style>
+<style scoped></style>
