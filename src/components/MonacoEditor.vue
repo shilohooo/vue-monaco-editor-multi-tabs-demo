@@ -8,7 +8,7 @@
         :class="{ 'bg-[#1e1e1e]': activeTab === index,'border-b-1': activeTab === index }"
         @click="switchTab(index)"
       >
-        <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24"/>
+        <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24" :color="tab.iconColor"/>
         <span :class="{ 'text-gray-500': activeTab !== index }">{{ tab.name }}</span>
         <div class="ml-2 text-sm cursor-pointer hover:text-red-400" @click.stop="closeTab(index)">×</div>
       </div>
@@ -33,6 +33,7 @@ interface Tab {
   content: string
   language: string
   iconName?: string
+  iconColor?: string
 }
 
 // Refs
@@ -41,21 +42,37 @@ let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null
 
 // Tab management
 const tabs = ref<Tab[]>([
-  { id: 1, name: 'HelloWorld.js', content: 'console.log(123)', language: 'javascript', iconName: 'javascript' },
-  { id: 2, name: 'HelloWorld.ts', content: 'const a: number = 123', language: 'typescript', iconName: 'typescript' },
+  {
+    id: 1,
+    name: 'HelloWorld.js',
+    content: 'console.log(123)',
+    language: 'javascript',
+    iconName: 'javascript',
+    iconColor: '#F5DD1E'
+  },
+  {
+    id: 2,
+    name: 'HelloWorld.ts',
+    content: 'const a: number = 123',
+    language: 'typescript',
+    iconName: 'typescript',
+    iconColor: '#0288D1'
+  },
   {
     id: 3,
     name: 'HelloWorld.java',
     content: 'public class HelloWorld {\n\tpublic static void main(String[] args) {}\n}',
     language: 'java',
-    iconName: 'java'
+    iconName: 'java',
+    iconColor: '#6699FF'
   },
   {
     id: 4,
     name: 'HelloWorld.cs',
     content: 'namespace HelloWorld;\n\npublic class HelloWorld {}',
     language: 'csharp',
-    iconName: 'csharp'
+    iconName: 'csharp',
+    iconColor: '#68217A'
   }
 ])
 const activeTab = ref<number>(0)
