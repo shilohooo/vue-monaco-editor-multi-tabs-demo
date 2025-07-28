@@ -38,6 +38,8 @@ interface Tab {
 
 // Refs
 const editor = ref<HTMLElement | null>(null)
+const modelMap = new Map<number, monaco.editor.ITextModel | null>()
+const viewStateMap = new Map<number, monaco.editor.ICodeEditorViewState | null>()
 let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null
 
 // Tab management
@@ -77,23 +79,93 @@ const tabs = ref<Tab[]>([
 ])
 const activeTab = ref<number>(0)
 
-// Initialize Monaco Editor
-onMounted(() => {
-  if (editor.value) {
-    editorInstance = monaco.editor.create(editor.value, {
-      value: tabs.value[0].content,
-      language: tabs.value[0].language,
-      theme: 'vs-dark',
-      automaticLayout: true,
-      fontSize: 16
-    })
-
-    editorInstance.onDidChangeModelContent(() => {
-      if (editorInstance) {
-        tabs.value[activeTab.value].content = editorInstance.getValue()
-      }
-    })
+// Tab operations
+const switchTab = (index: number) => {
+  if (!editorInstance) {
+    return
   }
+
+  const prevTabId = tabs.value[activeTab.value].id
+  const newTabId = tabs.value[index].id
+
+  viewStateMap?.set(prevTabId, editorInstance.saveViewState())
+
+
+  activeTab.value = index
+  const newModel = modelMap?.get(newTabId)
+  if (!newModel) {
+    return
+  }
+  editorInstance.setModel(newModel)
+  const viewState = viewStateMap?.get(newTabId)
+  if (!viewState) {
+    return
+  }
+
+  editorInstance.restoreViewState(viewState)
+  editorInstance.focus()
+}
+
+const addTab = async () => {
+  const newId = tabs.value.length + 1
+  const newTab = {
+    id: newId,
+    name: `Tab ${newId}`,
+    content: '// New tab content',
+    language: 'javascript'
+  }
+  tabs.value.push(newTab)
+
+  const newModel = monaco.editor.createModel(newTab.content, newTab.language)
+  modelMap?.set(newId, newModel)
+  await nextTick()
+  switchTab(tabs.value.length - 1)
+}
+
+const closeTab = (index: number) => {
+  if (tabs.value.length <= 1) {
+    return
+  }
+
+  const closedTab = tabs.value[index]
+  tabs.value.splice(index, 1)
+
+  const closedModel = modelMap?.get(closedTab.id)
+  if (closedModel) {
+    closedModel?.dispose()
+    modelMap?.delete(closedTab.id)
+    viewStateMap?.delete(closedTab.id)
+  }
+
+  if (activeTab.value >= tabs.value.length) {
+    activeTab.value = tabs.value.length - 1
+  }
+
+  switchTab(activeTab.value)
+}
+
+// Initialize Monaco Editor
+onMounted(async () => {
+  await nextTick()
+
+  if (!editor.value) {
+    console.error('Editor element not found')
+    return
+  }
+
+  tabs.value.forEach(tab => {
+    const model = monaco.editor.createModel(tab.content, tab.language)
+    modelMap?.set(tab.id, model)
+  })
+
+  const currentModel = modelMap?.get(tabs.value[0].id)
+  editorInstance = monaco.editor.create(editor.value, {
+    model: currentModel,
+    theme: 'vs-dark',
+    automaticLayout: true,
+    fontSize: 16
+  })
+
 })
 
 onUnmounted(() => {
@@ -101,40 +173,6 @@ onUnmounted(() => {
     editorInstance.dispose()
   }
 })
-
-// Tab operations
-const switchTab = (index: number) => {
-  if (editorInstance) {
-    tabs.value[activeTab.value].content = editorInstance.getValue()
-    activeTab.value = index
-    editorInstance.setValue(tabs.value[index].content)
-    monaco.editor.setModelLanguage(
-      editorInstance.getModel()!,
-      tabs.value[index].language
-    )
-  }
-}
-
-const addTab = () => {
-  const newId = tabs.value.length + 1
-  tabs.value.push({
-    id: newId,
-    name: `Tab ${newId}`,
-    content: '// New tab content',
-    language: 'javascript'
-  })
-  nextTick(() => switchTab(tabs.value.length - 1))
-}
-
-const closeTab = (index: number) => {
-  if (tabs.value.length > 1) {
-    tabs.value.splice(index, 1)
-    if (activeTab.value >= tabs.value.length) {
-      activeTab.value = tabs.value.length - 1
-    }
-    switchTab(activeTab.value)
-  }
-}
 </script>
 
 <style scoped></style>
