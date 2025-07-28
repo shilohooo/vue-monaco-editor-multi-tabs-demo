@@ -1,21 +1,29 @@
 <template>
   <div class="h-screen flex flex-col">
     <div class="flex bg-[#2d2d2d]">
-      <div
+      <q-tabs
+        v-model="activeTab"
         v-for="(tab, index) in tabs"
         :key="tab.id"
-        class="flex justify-center items-center gap-2 text-white cursor-pointer px-4 py-2"
-        :class="{ 'bg-[#1e1e1e]': activeTab === index,'border-b-1': activeTab === index }"
+        dense
+        indicator-color="blue"
         @click="switchTab(index)"
       >
-        <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24" :color="tab.iconColor"/>
-        <span :class="{ 'text-gray-500': activeTab !== index }">{{ tab.name }}</span>
-        <div class="ml-2 text-sm cursor-pointer hover:text-red-400" @click.stop="closeTab(index)">×</div>
+        <q-tab :name="index" no-caps>
+          <template #default>
+            <div class="flex justify-center items-center gap-2 text-white py-1">
+              <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24" :color="tab.iconColor"/>
+              <span :class="{ 'text-gray-500': activeTab !== index }">{{ tab.name }}</span>
+              <q-btn v-if="activeTab === index" icon="close" dense unelevated size="sm"
+                     @click="closeTab(index)"/>
+            </div>
+          </template>
+        </q-tab>
+      </q-tabs>
+      <div class="flex items-center">
+        <q-btn icon="add" dense size="sm" class="text-white" unelevated
+               @click="addTab"/>
       </div>
-      <button class="m-1 px-2 text-white cursor-pointer border-none hover:text-green-300 text-2xl"
-              @click="addTab">
-        +
-      </button>
     </div>
     <div ref="editor" class="flex-1/2 min-h-0"></div>
   </div>
@@ -106,7 +114,7 @@ const switchTab = (index: number) => {
   editorInstance.focus()
 }
 
-const addTab = async () => {
+const addTab = () => {
   const newId = tabs.value.length + 1
   const newTab = {
     id: newId,
@@ -118,7 +126,6 @@ const addTab = async () => {
 
   const newModel = monaco.editor.createModel(newTab.content, newTab.language)
   modelMap?.set(newId, newModel)
-  await nextTick()
   switchTab(tabs.value.length - 1)
 }
 
