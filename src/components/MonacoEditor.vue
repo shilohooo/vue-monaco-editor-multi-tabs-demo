@@ -1,17 +1,18 @@
 <template>
   <div class="h-screen flex flex-col">
-    <div class="flex bg-[#2d2d2d]">
+    <div class="flex border-b-1 border-b-gray-300 border-solid mb-4">
       <q-tabs
         v-model="activeTab"
         v-for="(tab, index) in tabs"
         :key="tab.id"
         dense
-        indicator-color="blue"
+        indicator-color="primary"
+        active-color="dark"
         @click="switchTab(index)"
       >
-        <q-tab :name="index" no-caps>
+        <q-tab :name="index" no-caps class="border-r-1 border-solid border-r-gray-300">
           <template #default>
-            <div class="flex justify-center items-center gap-2 text-white py-1">
+            <div class="flex justify-center items-center gap-2 py-1">
               <svg-icon v-if="tab.iconName" :name="tab.iconName" size="24" :color="tab.iconColor"/>
               <span :class="{ 'text-gray-500': activeTab !== index }">{{ tab.name }}</span>
               <q-btn v-if="activeTab === index" icon="close" dense unelevated size="sm"
@@ -20,8 +21,8 @@
           </template>
         </q-tab>
       </q-tabs>
-      <div class="flex items-center">
-        <q-btn icon="add" dense size="sm" class="text-white" unelevated
+      <div class="flex items-center mx-2">
+        <q-btn icon="add" dense size="sm" unelevated
                @click="addTab"/>
       </div>
     </div>
@@ -33,6 +34,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import * as monaco from 'monaco-editor'
 import SvgIcon from '@/components/SvgIcon.vue'
+import MonacoGitHubLightTheme from '@/assets/monaco-themes/GitHubLight.json'
 
 // Types
 interface Tab {
@@ -160,6 +162,7 @@ onMounted(async () => {
     return
   }
 
+
   tabs.value.forEach(tab => {
     const model = monaco.editor.createModel(tab.content, tab.language)
     modelMap?.set(tab.id, model)
@@ -168,10 +171,12 @@ onMounted(async () => {
   const currentModel = modelMap?.get(tabs.value[0].id)
   editorInstance = monaco.editor.create(editor.value, {
     model: currentModel,
-    theme: 'vs-dark',
     automaticLayout: true,
     fontSize: 16
   })
+
+  monaco.editor.defineTheme('GitHubLight', MonacoGitHubLightTheme)
+  monaco.editor.setTheme('GitHubLight')
 
 })
 
