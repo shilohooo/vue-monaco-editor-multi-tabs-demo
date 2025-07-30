@@ -6,13 +6,17 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+  import { nextTick, onMounted, onUnmounted, ref, defineEmits } from 'vue'
   import * as monaco from 'monaco-editor'
   import MonacoGitHubLightTheme from '@/assets/monaco-themes/GitHubLight.json'
   import EditorTabs from '@/components/EditorTabs.vue'
   import type { Tab } from '@/types/monaco-editor.ts'
 
   const props = defineProps<{ tabs: Tab[] }>()
+
+  const emits = defineEmits<{
+    (e: 'model-code-change', modelCode: string | undefined): void
+  }>()
 
   // Refs
   const editor = ref<HTMLElement | null>(null)
@@ -57,6 +61,9 @@
 
     props.tabs.forEach(tab => {
       const model = monaco.editor.createModel(tab.content, tab.language)
+      model.onDidChangeContent(() => {
+        emits('model-code-change', model.getValue())
+      })
       modelMap?.set(tab.id, model)
     })
 

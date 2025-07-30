@@ -37,11 +37,15 @@
       iconColor: '#68217A'
     }
   ])
+
+  function handleModelCodeChange(code: string | undefined) {
+    console.log('model code change', code)
+  }
 </script>
 
 <template>
   <div>
-    <monaco-editor :tabs="tabs"/>
+    <monaco-editor :tabs="tabs" @model-code-change="handleModelCodeChange"/>
   </div>
 </template>
 
