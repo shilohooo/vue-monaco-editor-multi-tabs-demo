@@ -60,7 +60,7 @@
 
 
     props.tabs.forEach(tab => {
-      const model = monaco.editor.createModel(tab.content, tab.language)
+      const model = monaco.editor.createModel(tab.content, undefined, monaco.Uri.file(tab.name))
       model.onDidChangeContent(() => {
         emits('model-code-change', model.getValue())
       })
